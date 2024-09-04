@@ -20,15 +20,18 @@ router.get("/register", register);
 // => il permet de suspendre l'exécution de la fonction jusqu'à ce que la promesse soit résolue
 
 router.post("/register", async (req, res) => {
+
+    // on vérifie sur l'utilisateur existe déjà 
+    const q = "SELECT id, username, password FROM `user` WHERE username = ?";
+    const [[user]] = await pool.execute(q, [req.body.username]);
+
     if (req.body.username.length > 2 && req.body.password.length > 2) {
-        
-        // + il faut vérifier que le nom d'utilisateur n'existe pas déjà !!!
 
         const hash = await bcrypt.hash(req.body.password, 10);
         // => avec await : on demande à cette ligne d'attendre que le hachage se termine pour continuer
 
        
-        const q = "INSERT INTO user (id, username, password) VALUES (?, ?)";
+        const q = "INSERT INTO user (username, password) VALUES (?, ?)";
         // préparation de la requête
 
         await pool.execute(q, [req.body.username, hash]);
